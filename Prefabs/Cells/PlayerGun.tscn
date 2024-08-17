@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bm1vs2wmaipd5"]
+
+[ext_resource type="Script" path="res://Scripts/Entities/CellGun.gd" id="1_cp8tf"]
+[ext_resource type="Texture2D" uid="uid://tixjn5urxxyw" path="res://Assets/PlayerGun.tres" id="2_ai7mq"]
+
+[node name="Gun" type="Node2D"]
+script = ExtResource("1_cp8tf")
+life = 1
+
+[node name="NewAtlasTexture" type="Sprite2D" parent="."]
+texture = ExtResource("2_ai7mq")
+
+[connection signal="child_entered_tree" from="." to="." method="_on_child_entered_tree"]

@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3 uid="uid://tixjn5urxxyw"]
+
+[ext_resource type="Texture2D" uid="uid://bl71ww1ao7so3" path="res://Assets/MegaDrone-Sprite.png" id="1_g4g7b"]
+
+[resource]
+atlas = ExtResource("1_g4g7b")
+region = Rect2(16, 256, 32, 32)

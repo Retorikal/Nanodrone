@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmryddlqdx0m1"]
+
+[ext_resource type="Script" path="res://Scripts/Entities/Cell.gd" id="1_ppb71"]
+[ext_resource type="Texture2D" uid="uid://5rxg8cjn8mtd" path="res://Assets/PlayerCore.tres" id="2_a1037"]
+
+[node name="Cell" type="Node2D"]
+script = ExtResource("1_ppb71")
+
+[node name="NewAtlasTexture" type="Sprite2D" parent="."]
+texture = ExtResource("2_a1037")
+
+[connection signal="child_entered_tree" from="." to="." method="_on_child_entered_tree"]

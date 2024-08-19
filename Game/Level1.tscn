@@ -5,25 +5,29 @@
 
 [node name="LevelManager" type="Node2D"]
 script = ExtResource("1_ymga8")
-region_bound_tl = Vector2i(5, 2)
+region_bound_tl = Vector2i(5, 1)
 region_bound_br = Vector2i(31, 17)
-grid_stride = null
 
 [node name="Drone" parent="." instance=ExtResource("1_n34wm")]
 position = Vector2(540, 252)
+player_owned = true
 grid_pos = Vector2i(15, 7)
 split_strength = 2
 
 [node name="Drone2" parent="." instance=ExtResource("1_n34wm")]
-position = Vector2(360, 324)
-grid_pos = Vector2i(10, 9)
+position = Vector2(360, 396)
+player_owned = true
+grid_pos = Vector2i(10, 11)
 split_strength = 2
 
 [node name="Drone4" parent="." instance=ExtResource("1_n34wm")]
-position = Vector2(1.4013e-45, 1.4013e-45)
+position = Vector2(180, 72)
+player_owned = true
+grid_pos = Vector2i(5, 2)
 split_strength = 2
 
 [node name="Drone3" parent="." instance=ExtResource("1_n34wm")]
 position = Vector2(648, 108)
+player_owned = true
 grid_pos = Vector2i(18, 3)
 split_strength = 2

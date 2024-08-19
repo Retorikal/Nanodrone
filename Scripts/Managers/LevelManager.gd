@@ -1,5 +1,9 @@
+@tool
 extends Node2D
 class_name LevelManager
+
+signal drone_clicked(drone: Drone, node: Node2D)
+signal resolve_finish(drones: Array[Drone])
 
 enum State {PLANNING, MOVING}
 
@@ -7,11 +11,11 @@ enum State {PLANNING, MOVING}
 @export var region_bound_br: Vector2i
 @export var grid_stride: int = 36
 @export var state: State = State.PLANNING
+@export var user_con: Controller
+@export var comp_con: Controller
 
-var user_con: Controller
-var comp_con: Controller
 var drones: Array[Drone]
-var pending_command: Dictionary
+var pending_commands: Dictionary
 
 var valid_bbox: Rect2i:
   get():
@@ -19,14 +23,42 @@ var valid_bbox: Rect2i:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+  if Engine.is_editor_hint():
+    return
+
   for child in get_children():
     if child is Drone:
-      drones.append(child)
-  pass # Replace with function body.
+      register_drone(child)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-  pass
+  state = State.PLANNING
+  user_con.connect("command_ready", self._on_command_ready)
+  comp_con.connect("command_ready", self._on_command_ready)
+  pool_command()
+
+func _draw() -> void:
+  var tl = Vector2(valid_bbox.position * grid_stride) - (Vector2.ONE * grid_stride * 0.5)
+  var bound_rect = Rect2(tl, valid_bbox.size * grid_stride)
+  draw_rect(bound_rect, Color.WHITE, false, 3)
+
+  for i in range(1, valid_bbox.size.y):
+    var bgn = Vector2(bound_rect.position.x, bound_rect.position.y + i * grid_stride)
+    var end = Vector2(bound_rect.end.x, bound_rect.position.y + i * grid_stride)
+    draw_line(bgn, end, Color.GRAY, .5, true)
+    pass
+
+  for i in range(1, valid_bbox.size.x):
+    var bgn = Vector2(bound_rect.position.x + i * grid_stride, bound_rect.position.y)
+    var end = Vector2(bound_rect.position.x + i * grid_stride, bound_rect.end.y)
+    draw_line(bgn, end, Color.GRAY, .5, true)
+    pass
+  
+
+func register_drone(drone: Drone):
+  drone.connect("drone_split", self._on_drone_split)
+  drone.connect("drone_destroyed", self._on_drone_destroyed)
+  drone.connect("drone_body_clicked", self._on_drone_clicked)
+  drone.connect("drone_joint_clicked", self._on_drone_clicked)
+  drones.append(drone)
 
 func pool_command():
   var user_drones: Array[Drone] = []
@@ -56,12 +88,15 @@ func resolve_commands():
   var resolvable_drones = drones.duplicate(false)
 
   for drone in resolvable_drones:
-    var command = pending_command[drone]
+    if !pending_commands.has(drone):
+      continue
+
+    var command = pending_commands[drone]
 
     if command is MoveCommand:
       move_within_bounds(drone, command.move_target)
 
-      if !drone.is_queued:
+      if drone.is_moving:
         await drone.action_done
 
     if command is SplitCommand:
@@ -69,11 +104,18 @@ func resolve_commands():
       move_within_bounds(clone, clone.grid_pos)
       move_within_bounds(drone, drone.grid_pos) 
       
-      if !drone.is_queued:
+      print("DMoving: ", drone.is_moving)
+      if drone.is_moving:
         await drone.action_done
 
-      if !clone.is_queued:
+      print("CMoving: ", clone.is_moving)
+      if clone.is_moving:
         await clone.action_done
+
+      register_drone(clone)
+  
+  resolve_finish.emit(drones)
+  print_debug("Command resolved! Waiting for new ones..")
 
 func move_within_bounds(drone: Drone, target: Vector2i):
   var clamped_target = target
@@ -94,8 +136,22 @@ func move_within_bounds(drone: Drone, target: Vector2i):
   drone.move(clamped_target)
   pass
 
+func _on_drone_split(_drone: Drone, clone: Drone):
+  register_drone(clone)
+
+func _on_drone_destroyed(drone: Drone):
+  drones.erase(drone)
+
+func _on_drone_clicked(drone:Drone, node: Node2D):
+  drone_clicked.emit(drone, node)
+
 func _on_command_ready(commands: Array[Command]):
   for command in commands:
-    pending_command[command.target_drone] = command
+    pending_commands[command.target_drone] = command
+    print_debug("Command added for:", command.target_drone)
 
-
+func _on_resolve():
+  state = State.MOVING
+  await resolve_commands()
+  state = State.PLANNING
+  pool_command()

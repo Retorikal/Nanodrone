@@ -1,6 +1,9 @@
 extends Controller
 class_name ControllerUI
 
+@onready var commands: Array[Command] = []
+@onready var commandables: Array[Drone] = []
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
   pass # Replace with function body.
@@ -11,11 +14,7 @@ func _process(delta: float) -> void:
   pass
 
 func prepare_controls(all_drones: Array[Drone], commandable_drones: Array[Drone]):
-  var commands: Array[Command]
+  commandables = commandable_drones
   
-  for drone in commandable_drones:
-    var possible_joints = drone.joint_dict.keys()
-    var index:int = possible_joints.size/2
-    var target_joint = drone.joint_dict[possible_joints[index]]
-    commands.push_back(SplitCommand.new(drone, target_joint))
-  pass
+func submit_command():
+  command_ready.emit(commands)

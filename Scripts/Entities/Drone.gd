@@ -2,11 +2,11 @@
 extends Node2D
 class_name Drone
 
-signal drone_split(drone1: Drone, drone2: Drone)
+signal drone_split(drone: Drone, clone: Drone)
 signal drone_body_clicked(drone: Drone, cell: Cell)
 signal drone_joint_clicked(drone: Drone, joint: Joint)
 signal action_done(drone:Drone)
-signal destroyed(drone:Drone)
+signal drone_destroyed(drone:Drone)
 
 @export var player_owned: bool
 @export var grid_pos: Vector2i
@@ -35,7 +35,7 @@ signal destroyed(drone:Drone)
 @onready var joint_dict: Dictionary = Dictionary()
 
 var local_bbox: Rect2i
-var is_queued: bool = false
+var is_moving: bool = false
 var global_bbox: Rect2i:
   get:
     return Rect2i(grid_pos + local_bbox.position, local_bbox.size)
@@ -50,12 +50,12 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
   var target = grid_pos * grid_stride
-  position = position.lerp(target, 0.5);
 
-  if position.distance_squared_to(target) < 0.01 && is_queued:
-    is_queued = false
+  if position.distance_squared_to(target) < 0.01 && is_moving:
+    is_moving = false
     action_done.emit(self)
-  pass
+
+  position = position.lerp(target, 0.5);
 
 func register_joints():
   for id in cell_dict:
@@ -140,17 +140,17 @@ func register_cells():
 func damage(damage: float):
   life -= damage
   if life <= 0:
-    destroyed.emit(self)
+    drone_destroyed.emit(self)
     queue_free()
 
 func move(target: Vector2i):
-  is_queued = true
   grid_pos = target
+  is_moving = true
   pass
 
 func split(joint: Joint) -> Drone:
-  is_queued = true
-  var split_cell_seed: Cell = joint.cell2
+  is_moving = true
+  var split_cell_seed: Cell = joint.get_cloneseed_cell()
   var split_vertical = joint.is_vertical
   delete_joint(joint)
 
@@ -171,8 +171,8 @@ func split(joint: Joint) -> Drone:
   # Create clone
   var clone = Drone.new()
   clone.grid_stride = grid_stride
-  clone.is_queued = true
   clone.position = position
+  clone.is_moving = true
   clone.breakpoint_template = breakpoint_template
   clone.split_strength = split_strength
   for explored_id in explored_ids:

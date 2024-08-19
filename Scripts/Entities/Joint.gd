@@ -20,6 +20,16 @@ static func get_key(pos1: Vector2i, pos2: Vector2i):
   
   return str(min_cell) + str(max_cell)
 
+func get_cloneseed_cell():
+  var pos1 = cell1.grid_pos
+  var pos2 = cell2.grid_pos
+  
+  if pos1.x != pos2.x:
+    return cell1 if pos1.x > pos2.x else cell2
+
+  elif pos1.y != pos2.y:
+    return cell1 if pos1.y > pos2.y else cell2
+
 var is_vertical: bool:
   get:
     return cell1.grid_pos.x == cell2.grid_pos.x

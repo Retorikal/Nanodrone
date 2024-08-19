@@ -5,16 +5,14 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_8tjpw"]
 radius = 8.0
 
-[node name="Breakpoint" type="Polygon2D"]
-color = Color(0.180005, 0.180005, 0.180005, 1)
-polygon = PackedVector2Array(-4, 0, 0, -4, 4, 0, 0, 4)
+[node name="Breakpoint" type="Area2D"]
 script = ExtResource("1_h7qkf")
 
-[node name="Area2D" type="Area2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_8tjpw")
 
-[connection signal="input_event" from="Area2D" to="." method="_on_area_2d_input_event"]
-[connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
-[connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]
+[node name="Area2D" type="Polygon2D" parent="."]
+color = Color(0.637843, 0.637843, 0.637843, 1)
+polygon = PackedVector2Array(-8, 0, 0, 8, 8, 0, 0, -8)
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]

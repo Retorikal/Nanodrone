@@ -2,9 +2,16 @@
 extends Node2D
 class_name Drone
 
-signal drone_split(drone: Drone)
+signal drone_split(drone1: Drone, drone2: Drone)
+signal drone_body_clicked(drone: Drone, cell: Cell)
+signal drone_joint_clicked(drone: Drone, joint: Joint)
+signal action_done(drone:Drone)
+signal destroyed(drone:Drone)
 
+@export var player_owned: bool
 @export var grid_pos: Vector2i
+@export var split_strength: int
+@export var life: float
 
 @export_category("Scenes")
 @export var breakpoint_template: PackedScene
@@ -27,6 +34,12 @@ signal drone_split(drone: Drone)
 @onready var cell_dict: Dictionary = Dictionary()
 @onready var joint_dict: Dictionary = Dictionary()
 
+var local_bbox: Rect2i
+var is_queued: bool = false
+var global_bbox: Rect2i:
+  get:
+    return Rect2i(grid_pos + local_bbox.position, local_bbox.size)
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
   register_cells()
@@ -36,9 +49,13 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-  position = position.lerp(grid_pos * grid_stride, 0.5);
-  pass
+  var target = grid_pos * grid_stride
+  position = position.lerp(target, 0.5);
 
+  if position.distance_squared_to(target) < 0.01 && is_queued:
+    is_queued = false
+    action_done.emit(self)
+  pass
 
 func register_joints():
   for id in cell_dict:
@@ -66,13 +83,13 @@ func create_joint(cell1: Cell, cell2: Cell) -> Joint:
   joint.cell2 = cell2
   joint.cell1.adjacents.append(cell2)
   joint.cell2.adjacents.append(cell1)
-  joint.connect("request_break", self._on_break) # TODO: This should be managed by LevelManager
   joint_dict[joint.get_joint_key()] = joint
   add_child(joint)
-
+  joint.connect("joint_clicked", self._body_clicked)
   return joint
 
 func delete_joint(joint: Joint):
+  joint.disconnect("joint_clicked", self._body_clicked)
   joint_dict.erase(joint.delete())
   return joint
 
@@ -80,12 +97,20 @@ func register_cells():
   cell_dict = Dictionary()
 
   # TODO: Round everything first
-
+  var tl: Vector2i = Vector2i(100000, 100000)
+  var br: Vector2i = Vector2i(-100000, -100000)
   for child in get_children():
     if child is Cell:
       child.position = child.grid_pos * grid_stride
       cell_dict[child.grid_pos] = child
+      if !child.cell_clicked.is_connected(self._body_clicked):
+        child.connect("cell_clicked", self._body_clicked)
+
+      tl = Vector2i(min(tl.x, child.grid_pos.x), min(tl.y, child.grid_pos.y))
+      br = Vector2i(max(br.x, child.grid_pos.x), max(br.y, child.grid_pos.y))
   
+  local_bbox = Rect2i(tl, br + Vector2i.ONE - tl)
+
   for id in cell_dict:
     var cell: Cell = cell_dict[id]
     if cell.connected_W:
@@ -110,14 +135,23 @@ func register_cells():
         cell.connected_D = false
     pass
 
+  print_debug("Drone cells registered", global_bbox)
 
-func _on_request_connect(cell: Cell, connect_cell: C.Dir, value: bool):
+func damage(damage: float):
+  life -= damage
+  if life <= 0:
+    destroyed.emit(self)
+    queue_free()
+
+func move(target: Vector2i):
+  is_queued = true
+  grid_pos = target
   pass
 
-func _on_break(joint: Joint):
-  print("I am at ", self, " and was called by ", joint)
-
+func split(joint: Joint) -> Drone:
+  is_queued = true
   var split_cell_seed: Cell = joint.cell2
+  var split_vertical = joint.is_vertical
   delete_joint(joint)
 
   var explored_ids: Array[Vector2i] = []
@@ -137,10 +171,13 @@ func _on_break(joint: Joint):
   # Create clone
   var clone = Drone.new()
   clone.grid_stride = grid_stride
+  clone.is_queued = true
   clone.position = position
   clone.breakpoint_template = breakpoint_template
+  clone.split_strength = split_strength
   for explored_id in explored_ids:
     var cell: Cell = cell_dict[explored_id]
+    cell.disconnect("cell_clicked", self._body_clicked)
     cell_dict.erase(explored_id)
     remove_child(cell)
     clone.add_child(cell)
@@ -151,7 +188,6 @@ func _on_break(joint: Joint):
     print(joint_id)
 
   for joint_id in joint_dict.keys():
-    print("attempting to delete ", joint_id)
     var checked_joint: Joint = joint_dict[joint_id]
     var joint_cell_id_1 = checked_joint.cell1.grid_pos
     var joint_cell_id_2 = checked_joint.cell2.grid_pos
@@ -159,10 +195,30 @@ func _on_break(joint: Joint):
       delete_joint(checked_joint)
 
   # Push clone and self away.
-  var clone_size = explored_ids.size()
+  var size_pool: float = explored_ids.size() + size
+  var size_frac = size / size_pool
+  var clone_force: int = round(size_frac * split_strength)
+  var main_force: int = clone_force - split_strength
+  var direction = (Vector2i.DOWN if split_vertical else Vector2i.RIGHT)
   var start_pos = grid_pos
-  clone.grid_pos = start_pos + Vector2i.RIGHT
-  grid_pos = start_pos + Vector2i.UP
-  print("split weight is ", clone_size, size)
+  grid_pos = start_pos + direction * main_force
+  clone.grid_pos = start_pos + direction * clone_force
+  drone_split.emit(self, clone)
+  print("Splitting ", main_force, ":", clone_force, " ", explored_ids.size(), ":", size)
 
+  return clone
+
+func _body_clicked(body_part: Area2D):
+  print(body_part, " Clicked!")
+  if body_part is Cell:
+    drone_body_clicked.emit(self, body_part)
+    return
+  if body_part is Joint:
+    drone_joint_clicked.emit(self, body_part)
+    return
+
+  print_debug("Unrecognized clicker")
+
+
+func _on_request_connect(cell: Cell, connect_cell: C.Dir, value: bool):
   pass

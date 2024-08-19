@@ -7,18 +7,19 @@
 
 [node name="Drone" type="Node2D"]
 script = ExtResource("1_llct6")
+split_strength = 4
 breakpoint_template = ExtResource("2_tjsaw")
-size = 14
-max_life = 24.0
+size = 15
+max_life = 26.0
 
 [node name="Cell6" parent="." instance=ExtResource("2_8pacg")]
-position = Vector2(-36, 36)
-connected_D = true
-grid_pos = Vector2i(-1, 1)
+position = Vector2(36, 0)
+connected_A = true
+grid_pos = Vector2i(1, 0)
 
 [node name="Cell8" parent="." instance=ExtResource("2_8pacg")]
 position = Vector2(0, 36)
-connected_A = true
+connected_W = true
 connected_S = true
 grid_pos = Vector2i(0, 1)
 
@@ -28,6 +29,10 @@ connected_W = true
 connected_S = true
 connected_D = true
 grid_pos = Vector2i(0, 2)
+
+[node name="Cell17" parent="." instance=ExtResource("2_8pacg")]
+connected_S = true
+connected_D = true
 
 [node name="Cell10" parent="." instance=ExtResource("2_8pacg")]
 position = Vector2(0, 108)

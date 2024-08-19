@@ -1,12 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://dmryddlqdx0m1"]
+[gd_scene load_steps=4 format=3 uid="uid://dmryddlqdx0m1"]
 
 [ext_resource type="Script" path="res://Scripts/Entities/Cell.gd" id="1_ppb71"]
 [ext_resource type="Texture2D" uid="uid://5rxg8cjn8mtd" path="res://Assets/PlayerCore.tres" id="2_a1037"]
 
-[node name="Cell" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7veu6"]
+size = Vector2(32, 32)
+
+[node name="Cell" type="Area2D"]
 script = ExtResource("1_ppb71")
 
 [node name="NewAtlasTexture" type="Sprite2D" parent="."]
 texture = ExtResource("2_a1037")
 
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_7veu6")
+
 [connection signal="child_entered_tree" from="." to="." method="_on_child_entered_tree"]
+[connection signal="input_event" from="." to="." method="_on_input_event"]

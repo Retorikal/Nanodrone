@@ -1,7 +1,8 @@
 @tool
-extends Node2D
+extends Area2D
 class_name Cell
 
+signal cell_clicked(cell: Cell)
 signal request_connect(cell: Cell, connect_cell: C.Dir, value: bool)
 
 @export var life: int = 2
@@ -62,7 +63,7 @@ func _notification(what: int) -> void:
     var grid_pos_frac = position / parent.grid_stride;
     grid_pos = Vector2i(grid_pos_frac.round())
 
-func _on_child_entered_tree(node: Node) -> void:
+func _on_child_entered_tree(_node: Node) -> void:
   var tmpParent = get_parent()
 
   if get_parent() is Drone:
@@ -82,11 +83,14 @@ func _connect_cell(connect_dir: C.Dir, value: bool):
   request_connect.emit(self, connect_dir, value)
   pass
 
+func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+  if event is InputEventMouseButton and event.is_pressed():
+    cell_clicked.emit(self)
+
 func _get_configuration_warnings():
   var warnings = []
 
   if get_parent() is not Drone:
     warnings.append("Cell object must be parented to a Drone object")
-
 
   return warnings

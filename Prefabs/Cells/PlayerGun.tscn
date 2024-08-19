@@ -1,13 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://bm1vs2wmaipd5"]
+[gd_scene load_steps=4 format=3 uid="uid://bm1vs2wmaipd5"]
 
 [ext_resource type="Script" path="res://Scripts/Entities/CellGun.gd" id="1_cp8tf"]
 [ext_resource type="Texture2D" uid="uid://tixjn5urxxyw" path="res://Assets/PlayerGun.tres" id="2_ai7mq"]
 
-[node name="Gun" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hxban"]
+size = Vector2(32, 32)
+
+[node name="Gun" type="Area2D"]
 script = ExtResource("1_cp8tf")
 life = 1
 
 [node name="NewAtlasTexture" type="Sprite2D" parent="."]
 texture = ExtResource("2_ai7mq")
 
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_hxban")
+
 [connection signal="child_entered_tree" from="." to="." method="_on_child_entered_tree"]
+[connection signal="input_event" from="." to="." method="_on_input_event"]

@@ -10,11 +10,6 @@ extends Node
 func _ready() -> void:
   level_man.user_con = con_ui
   level_man.comp_con = con_ai
-
-  await get_tree().create_timer(3.0).timeout
-  
-  # print_debug("Command content: ", level_man.pending_commands.size())
-  # level_man.resolve_commands()
   pass # Replace with function body.
 
 

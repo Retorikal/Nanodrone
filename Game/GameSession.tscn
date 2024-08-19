@@ -63,3 +63,4 @@ text = "Shoot
 [connection signal="drone_clicked" from="LevelManager" to="GameUI" method="_on_drone_click"]
 [connection signal="resolve" from="GameUI" to="LevelManager" method="_on_resolve"]
 [connection signal="button_up" from="GameUI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
+[connection signal="pressed" from="GameUI/SelectorBox/Split" to="GameUI" method="_on_split_click"]

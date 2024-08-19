@@ -174,6 +174,7 @@ func split(joint: Joint) -> Drone:
   clone.position = position
   clone.is_moving = true
   clone.breakpoint_template = breakpoint_template
+  clone.player_owned = player_owned
   clone.split_strength = split_strength
   for explored_id in explored_ids:
     var cell: Cell = cell_dict[explored_id]
@@ -182,10 +183,6 @@ func split(joint: Joint) -> Drone:
     remove_child(cell)
     clone.add_child(cell)
   get_parent().add_child(clone)
-
-  # Delete all orphaned joint
-  for joint_id in joint_dict:
-    print(joint_id)
 
   for joint_id in joint_dict.keys():
     var checked_joint: Joint = joint_dict[joint_id]
@@ -209,7 +206,6 @@ func split(joint: Joint) -> Drone:
   return clone
 
 func _body_clicked(body_part: Area2D):
-  print(body_part, " Clicked!")
   if body_part is Cell:
     drone_body_clicked.emit(self, body_part)
     return

@@ -3,7 +3,7 @@ extends Node2D
 class_name LevelManager
 
 signal drone_clicked(drone: Drone, node: Node2D)
-signal resolve_finish(drones: Array[Drone])
+signal resolve_finish()
 
 enum State {PLANNING, MOVING}
 
@@ -64,6 +64,7 @@ func pool_command():
   var user_drones: Array[Drone] = []
   var comp_drones: Array[Drone] = []
 
+  pending_commands.clear()
   drones.sort_custom(sort_drones_mass_ascending)
 
   for drone in drones:
@@ -87,11 +88,14 @@ func sort_drones_mass_ascending(d1: Drone, d2: Drone):
 func resolve_commands():
   var resolvable_drones = drones.duplicate(false)
 
+  print("Resolving ", pending_commands.size(), " commands" )
+
   for drone in resolvable_drones:
     if !pending_commands.has(drone):
       continue
 
     var command = pending_commands[drone]
+    print("Doing ", resolvable_drones.size(), " ", command.target_drone, command.split_target)
 
     if command is MoveCommand:
       move_within_bounds(drone, command.move_target)
@@ -104,18 +108,16 @@ func resolve_commands():
       move_within_bounds(clone, clone.grid_pos)
       move_within_bounds(drone, drone.grid_pos) 
       
-      print("DMoving: ", drone.is_moving)
       if drone.is_moving:
         await drone.action_done
 
-      print("CMoving: ", clone.is_moving)
       if clone.is_moving:
         await clone.action_done
 
-      register_drone(clone)
-  
-  resolve_finish.emit(drones)
-  print_debug("Command resolved! Waiting for new ones..")
+      print(drone, clone)
+
+  print("Command resolved! Waiting for new ones..")
+  resolve_finish.emit()
 
 func move_within_bounds(drone: Drone, target: Vector2i):
   var clamped_target = target

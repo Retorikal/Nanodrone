@@ -11,4 +11,5 @@ func _process(delta: float) -> void:
   pass
 
 func prepare_controls(all_drones: Array[Drone], commandable_drones: Array[Drone]):
-  command_ready.emit(get_mock_commands(commandable_drones))
+  # command_ready.emit(get_mock_commands(commandable_drones))
+  pass

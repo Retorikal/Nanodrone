@@ -7,6 +7,7 @@
 
 [node name="Drone" type="Node2D"]
 script = ExtResource("1_llct6")
+player_owned = true
 split_strength = 4
 breakpoint_template = ExtResource("2_tjsaw")
 size = 15

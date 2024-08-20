@@ -1,7 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://bb2p7j8muohnk"]
+[gd_scene load_steps=9 format=3 uid="uid://bb2p7j8muohnk"]
 
 [ext_resource type="PackedScene" uid="uid://dilw0qrwwkel7" path="res://Prefabs/Drones/PlayerDrone.tscn" id="1_n34wm"]
 [ext_resource type="Script" path="res://Scripts/Managers/LevelManager.gd" id="1_ymga8"]
+[ext_resource type="AudioStream" uid="uid://c32mflftaf66e" path="res://Assets/Audio/Click SFX.wav" id="3_ei4q8"]
+[ext_resource type="AudioStream" uid="uid://dblm81aksl28y" path="res://Assets/Audio/Damaged SFX.wav" id="4_06gyw"]
+[ext_resource type="AudioStream" uid="uid://cmidhkjmdihx4" path="res://Assets/Audio/Detach.wav" id="5_gr33q"]
+[ext_resource type="AudioStream" uid="uid://bu578325lr55c" path="res://Assets/Audio/Movement.wav" id="6_ql1uf"]
+[ext_resource type="AudioStream" uid="uid://d1oelx2u2lmjw" path="res://Assets/Audio/Shoot.wav" id="7_ucmu7"]
+[ext_resource type="AudioStream" uid="uid://cbgeqwrr8ccqu" path="res://Assets/Audio/Main Theme.mp3" id="8_4oui5"]
 
 [node name="LevelManager" type="Node2D"]
 script = ExtResource("1_ymga8")
@@ -12,6 +18,21 @@ region_bound_br = Vector2i(31, 17)
 position = Vector2(540, 252)
 grid_pos = Vector2i(15, 7)
 split_strength = 2
+
+[node name="Click" type="AudioStreamPlayer2D" parent="Drone"]
+stream = ExtResource("3_ei4q8")
+
+[node name="Damaged" type="AudioStreamPlayer2D" parent="Drone"]
+stream = ExtResource("4_06gyw")
+
+[node name="Detach" type="AudioStreamPlayer2D" parent="Drone"]
+stream = ExtResource("5_gr33q")
+
+[node name="Move" type="AudioStreamPlayer2D" parent="Drone"]
+stream = ExtResource("6_ql1uf")
+
+[node name="Shoot" type="AudioStreamPlayer2D" parent="Drone"]
+stream = ExtResource("7_ucmu7")
 
 [node name="Drone2" parent="." instance=ExtResource("1_n34wm")]
 position = Vector2(360, 396)
@@ -27,3 +48,8 @@ split_strength = 2
 position = Vector2(648, 108)
 grid_pos = Vector2i(18, 3)
 split_strength = 2
+
+[node name="Main BGM" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("8_4oui5")
+autoplay = true
+parameters/looping = false

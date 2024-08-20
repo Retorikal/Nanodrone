@@ -18,7 +18,6 @@ func prepare_controls(all_drones: Array[Drone], commandable_drones: Array[Drone]
   commandables = commandable_drones
   
 func add_command(command: Command):
-
   print("Adding ", command.target_drone, command.split_target)
   commands[command.target_drone] = command
 

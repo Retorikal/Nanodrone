@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://xvaecelgqh31"]
+
+[node name="Highlighter" type="Node2D"]
+
+[node name="Polygon2D2" type="Polygon2D" parent="."]
+rotation = 1.5708
+color = Color(1, 0.737255, 0, 1)
+polygon = PackedVector2Array(-4.00006, -16, -12, -3.99996, -4.00003, -7.99999, 3.99997, -8.00001, 12, -4.00004, 3.99994, -16)
+
+[node name="Polygon2D4" type="Polygon2D" parent="."]
+rotation = 4.71239
+color = Color(1, 0.737255, 0, 1)
+polygon = PackedVector2Array(-4.00002, -16, -12, -3.99999, -4.00001, -8, 3.99999, -8, 12, -4.00001, 3.99998, -16)

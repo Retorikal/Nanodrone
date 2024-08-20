@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://67nvt00cll2i"]
+[gd_scene load_steps=8 format=3 uid="uid://67nvt00cll2i"]
 
 [ext_resource type="Script" path="res://Scripts/Managers/CampaignManager.gd" id="1_w42tk"]
 [ext_resource type="PackedScene" uid="uid://bb2p7j8muohnk" path="res://Game/Level1.tscn" id="2_1se7r"]
 [ext_resource type="Script" path="res://Scripts/Controller/ControllerUI.gd" id="2_mqu68"]
 [ext_resource type="Script" path="res://Scripts/Controller/ControllerAI.gd" id="3_u83lr"]
+[ext_resource type="Script" path="res://Scripts/UI/Highlighter.gd" id="4_bqxx2"]
 [ext_resource type="Script" path="res://Scripts/UI/GameUI.gd" id="5_lns60"]
+[ext_resource type="PackedScene" uid="uid://xvaecelgqh31" path="res://Game/UI/Highlighter.tscn" id="5_rinqf"]
 
 [node name="GameSession" type="Node2D"]
 script = ExtResource("1_w42tk")
@@ -16,51 +18,111 @@ comp_con = NodePath("../ControllerAI")
 [node name="ControllerUI" type="Node2D" parent="."]
 script = ExtResource("2_mqu68")
 
+[node name="Highlighter" type="Node2D" parent="ControllerUI"]
+script = ExtResource("4_bqxx2")
+dots = ExtResource("5_rinqf")
+
 [node name="ControllerAI" type="Node2D" parent="."]
 script = ExtResource("3_u83lr")
 
-[node name="GameUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("controller")]
+[node name="GameUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("controller", "highlighter")]
 script = ExtResource("5_lns60")
 controller = NodePath("../ControllerUI")
-state = null
+highlighter = NodePath("../ControllerUI/Highlighter")
 metadata/_edit_use_anchors_ = true
 
-[node name="Sidebar" type="VBoxContainer" parent="GameUI"]
-anchors_preset = 9
+[node name="UI" type="Control" parent="GameUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 63.0
+offset_right = -992.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sidebar" type="VBoxContainer" parent="GameUI/UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 16.0
+offset_right = -8.0
+offset_bottom = -16.0
+grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
 alignment = 1
 
-[node name="TurnCycle" type="VBoxContainer" parent="GameUI/Sidebar"]
+[node name="Submit" type="Button" parent="GameUI/UI/Sidebar"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Submit"
+
+[node name="TurnCycle" type="VBoxContainer" parent="GameUI/UI/Sidebar"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Submit" type="Button" parent="GameUI/Sidebar"]
+[node name="MarginContainer" type="MarginContainer" parent="GameUI/UI/Sidebar/TurnCycle"]
 layout_mode = 2
-size_flags_vertical = 10
-text = "Submit"
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_bottom = 2
 
-[node name="SelectorBox" type="VBoxContainer" parent="GameUI"]
+[node name="ColorRect" type="ColorRect" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+color = Color(0.0728426, 0.0728426, 0.0728426, 1)
+
+[node name="Label" type="Label" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer/ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Very Cool Turn Tracker"
+autowrap_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="GameUI/UI/Sidebar/TurnCycle"]
+layout_mode = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_bottom = 2
+
+[node name="ColorRect" type="ColorRect" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer2"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+color = Color(0.0728426, 0.0728426, 0.0728426, 1)
+
+[node name="Label" type="Label" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer2/ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Very Cool Turn Tracker"
+autowrap_mode = 2
+
+[node name="SelectorBox" type="VBoxContainer" parent="GameUI/UI"]
+layout_mode = 0
 offset_left = -64.0
 offset_right = -11.0
 offset_bottom = 101.0
 
-[node name="Move" type="Button" parent="GameUI/SelectorBox"]
+[node name="Move" type="Button" parent="GameUI/UI/SelectorBox"]
 layout_mode = 2
 text = "Move"
 
-[node name="Split" type="Button" parent="GameUI/SelectorBox"]
+[node name="Split" type="Button" parent="GameUI/UI/SelectorBox"]
 layout_mode = 2
 text = "Split"
 
-[node name="Shoot" type="Button" parent="GameUI/SelectorBox"]
+[node name="Shoot" type="Button" parent="GameUI/UI/SelectorBox"]
 layout_mode = 2
 text = "Shoot
 "
 
 [connection signal="drone_clicked" from="LevelManager" to="GameUI" method="_on_drone_click"]
 [connection signal="resolve" from="GameUI" to="LevelManager" method="_on_resolve"]
-[connection signal="button_up" from="GameUI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
-[connection signal="pressed" from="GameUI/SelectorBox/Split" to="GameUI" method="_on_split_click"]
+[connection signal="button_up" from="GameUI/UI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
+[connection signal="pressed" from="GameUI/UI/SelectorBox/Split" to="GameUI" method="_on_split_click"]

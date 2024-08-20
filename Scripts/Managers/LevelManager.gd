@@ -7,6 +7,12 @@ signal resolve_finish()
 
 enum State {PLANNING, MOVING}
 
+@onready var SFXClick = $Drone/Click
+@onready var SFXDamaged = $Drone/Damaged
+@onready var SFXDetach = $Drone/Detach
+@onready var SFXMove = $Drone/Move
+@onready var SFXShoot = $Drone/Shoot
+
 @export var region_bound_tl: Vector2i
 @export var region_bound_br: Vector2i
 @export var grid_stride: int = 36
@@ -140,18 +146,21 @@ func move_within_bounds(drone: Drone, target: Vector2i):
     clamped_target.y += dbot
 
   print(dl, " ", dr, " ", dtop, " ", dbot)
+  SFXMove.play()
 
   drone.move(clamped_target)
   pass
 
 func _on_drone_split(_drone: Drone, clone: Drone):
   register_drone(clone)
+  SFXDetach.play()
 
 func _on_drone_destroyed(drone: Drone):
   drones.erase(drone)
 
 func _on_drone_clicked(drone: Drone, node: Node2D):
   drone_clicked.emit(drone, node)
+  SFXClick.play()
 
 func _on_command_ready(commands: Array[Command]):
   for command in commands:

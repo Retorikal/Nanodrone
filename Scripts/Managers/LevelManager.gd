@@ -88,14 +88,14 @@ func sort_drones_mass_ascending(d1: Drone, d2: Drone):
 func resolve_commands():
   var resolvable_drones = drones.duplicate(false)
 
-  print("Resolving ", pending_commands.size(), " commands" )
+  print("Resolving ", pending_commands.size(), " commands")
 
   for drone in resolvable_drones:
     if !pending_commands.has(drone):
       continue
 
     var command = pending_commands[drone]
-    print("Doing ", resolvable_drones.size(), " ", command.target_drone, command.split_target)
+    print("Doing ", resolvable_drones.size(), " ", command.target_drone, command.get_class())
 
     if command is MoveCommand:
       move_within_bounds(drone, command.move_target)
@@ -106,7 +106,7 @@ func resolve_commands():
     if command is SplitCommand:
       var clone = drone.split(command.split_target)
       move_within_bounds(clone, clone.grid_pos)
-      move_within_bounds(drone, drone.grid_pos) 
+      move_within_bounds(drone, drone.grid_pos)
       
       if drone.is_moving:
         await drone.action_done
@@ -121,10 +121,14 @@ func resolve_commands():
 
 func move_within_bounds(drone: Drone, target: Vector2i):
   var clamped_target = target
-  var dl = drone.global_bbox.position.x - valid_bbox.position.x 
-  var dr = valid_bbox.end.x - drone.global_bbox.end.x
-  var dtop = drone.global_bbox.position.y - valid_bbox.position.y
-  var dbot = valid_bbox.end.y - drone.global_bbox.end.y
+  var dpos = target - drone.grid_pos
+  var target_pos_bbox = drone.global_bbox
+  target_pos_bbox.position += dpos
+
+  var dl = target_pos_bbox.position.x - valid_bbox.position.x
+  var dr = valid_bbox.end.x - target_pos_bbox.end.x
+  var dtop = target_pos_bbox.position.y - valid_bbox.position.y
+  var dbot = valid_bbox.end.y - target_pos_bbox.end.y
 
   if dl < 0:
     clamped_target.x -= dl
@@ -135,6 +139,8 @@ func move_within_bounds(drone: Drone, target: Vector2i):
   if dbot < 0:
     clamped_target.y += dbot
 
+  print(dl, " ", dr, " ", dtop, " ", dbot)
+
   drone.move(clamped_target)
   pass
 
@@ -144,7 +150,7 @@ func _on_drone_split(_drone: Drone, clone: Drone):
 func _on_drone_destroyed(drone: Drone):
   drones.erase(drone)
 
-func _on_drone_clicked(drone:Drone, node: Node2D):
+func _on_drone_clicked(drone: Drone, node: Node2D):
   drone_clicked.emit(drone, node)
 
 func _on_command_ready(commands: Array[Command]):

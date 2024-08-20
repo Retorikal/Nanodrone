@@ -21,6 +21,7 @@ script = ExtResource("2_mqu68")
 [node name="Highlighter" type="Node2D" parent="ControllerUI"]
 script = ExtResource("4_bqxx2")
 dots = ExtResource("5_rinqf")
+state = null
 
 [node name="ControllerAI" type="Node2D" parent="."]
 script = ExtResource("3_u83lr")
@@ -125,4 +126,5 @@ text = "Shoot
 [connection signal="drone_clicked" from="LevelManager" to="GameUI" method="_on_drone_click"]
 [connection signal="resolve" from="GameUI" to="LevelManager" method="_on_resolve"]
 [connection signal="button_up" from="GameUI/UI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
+[connection signal="pressed" from="GameUI/UI/SelectorBox/Move" to="GameUI" method="_on_move_click"]
 [connection signal="pressed" from="GameUI/UI/SelectorBox/Split" to="GameUI" method="_on_split_click"]

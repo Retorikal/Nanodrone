@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://67nvt00cll2i"]
+[gd_scene load_steps=9 format=3 uid="uid://67nvt00cll2i"]
 
 [ext_resource type="Script" path="res://Scripts/Managers/CampaignManager.gd" id="1_w42tk"]
 [ext_resource type="PackedScene" uid="uid://bb2p7j8muohnk" path="res://Game/Level1.tscn" id="2_1se7r"]
+[ext_resource type="Texture2D" uid="uid://dqmo61fk5atxw" path="res://Assets/bg1.png" id="2_2oqcx"]
 [ext_resource type="Script" path="res://Scripts/Controller/ControllerUI.gd" id="2_mqu68"]
 [ext_resource type="Script" path="res://Scripts/Controller/ControllerAI.gd" id="3_u83lr"]
 [ext_resource type="Script" path="res://Scripts/UI/Highlighter.gd" id="4_bqxx2"]
@@ -10,6 +11,11 @@
 
 [node name="GameSession" type="Node2D"]
 script = ExtResource("1_w42tk")
+
+[node name="Bg1" type="Sprite2D" parent="."]
+position = Vector2(576, 288)
+scale = Vector2(2.25, 2.25)
+texture = ExtResource("2_2oqcx")
 
 [node name="LevelManager" parent="." node_paths=PackedStringArray("user_con", "comp_con") instance=ExtResource("2_1se7r")]
 user_con = NodePath("../ControllerUI")

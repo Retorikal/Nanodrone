@@ -25,7 +25,10 @@ func _process(_delta: float) -> void:
   match state:
     State.HIGHLIGHT_MOVE:
       var dmouse = get_viewport().get_mouse_position() - click_position
-      dgrid = round(dmouse / selected_drone.grid_stride)
+      var dgrid_frag = dmouse / selected_drone.grid_stride
+      if dgrid_frag.length() > selected_drone.max_move_dist:
+        dgrid_frag = dgrid_frag.normalized() * selected_drone.max_move_dist
+      dgrid = round(dgrid_frag)
       var snap_position = (selected_drone.grid_pos + dgrid) * selected_drone.grid_stride
       active_hl.global_position = active_hl.global_position.lerp(snap_position, 0.5)
   pass

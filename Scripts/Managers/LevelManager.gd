@@ -139,7 +139,7 @@ func move_within_bounds(drone: Drone, target: Vector2i):
   if dbot < 0:
     clamped_target.y += dbot
 
-  print(dl, " ", dr, " ", dtop, " ", dbot)
+  print(target_pos_bbox, " ", dl, " ", dr, " ", dtop, " ", dbot)
 
   drone.move(clamped_target)
   pass

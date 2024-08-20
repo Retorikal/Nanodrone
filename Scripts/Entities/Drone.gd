@@ -5,12 +5,13 @@ class_name Drone
 signal drone_split(drone: Drone, clone: Drone)
 signal drone_body_clicked(drone: Drone, cell: Cell)
 signal drone_joint_clicked(drone: Drone, joint: Joint)
-signal action_done(drone:Drone)
-signal drone_destroyed(drone:Drone)
+signal action_done(drone: Drone)
+signal drone_destroyed(drone: Drone)
 
 @export var player_owned: bool
 @export var grid_pos: Vector2i
 @export var split_strength: int
+@export var move_speed: float
 @export var life: float
 
 @export_category("Scenes")
@@ -25,10 +26,13 @@ signal drone_destroyed(drone:Drone)
     return cell_dict.size()
 @export var max_life: float:
   get():
-    var life = 0
+    var life_c = 0
     for id in cell_dict:
-      life += cell_dict[id].life
-    return life
+      life_c += cell_dict[id].life
+    return life_c
+@export var max_move_dist: int:
+  get():
+    return round(move_speed / size)
 
 @onready var grid_stride: int = 36
 @onready var cell_dict: Dictionary = Dictionary()
@@ -43,6 +47,7 @@ var global_bbox: Rect2i:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
   register_cells()
+  register_size()
 
   if not Engine.is_editor_hint():
     register_joints()
@@ -55,7 +60,7 @@ func _process(_delta: float) -> void:
     is_moving = false
     action_done.emit(self)
 
-  position = position.lerp(target, 0.5);
+  position = position.lerp(target, 0.1);
 
 func register_joints():
   for id in cell_dict:
@@ -93,9 +98,7 @@ func delete_joint(joint: Joint):
   joint_dict.erase(joint.delete())
   return joint
 
-func register_cells():
-  cell_dict = Dictionary()
-
+func register_size():
   # TODO: Round everything first
   var tl: Vector2i = Vector2i(100000, 100000)
   var br: Vector2i = Vector2i(-100000, -100000)
@@ -110,6 +113,9 @@ func register_cells():
       br = Vector2i(max(br.x, child.grid_pos.x), max(br.y, child.grid_pos.y))
   
   local_bbox = Rect2i(tl, br + Vector2i.ONE - tl)
+
+func register_cells():
+  cell_dict = Dictionary()
 
   for id in cell_dict:
     var cell: Cell = cell_dict[id]
@@ -173,6 +179,7 @@ func split(joint: Joint) -> Drone:
   clone.grid_stride = grid_stride
   clone.position = position
   clone.is_moving = true
+  clone.move_speed = move_speed
   clone.breakpoint_template = breakpoint_template
   clone.player_owned = player_owned
   clone.split_strength = split_strength
@@ -183,6 +190,7 @@ func split(joint: Joint) -> Drone:
     remove_child(cell)
     clone.add_child(cell)
   get_parent().add_child(clone)
+  register_size()
 
   for joint_id in joint_dict.keys():
     var checked_joint: Joint = joint_dict[joint_id]

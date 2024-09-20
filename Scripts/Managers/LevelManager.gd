@@ -3,15 +3,10 @@ extends Node2D
 class_name LevelManager
 
 signal drone_clicked(drone: Drone, node: Node2D)
+signal round_start(sorted_drones: Array[Drone])
 signal resolve_finish()
 
 enum State {PLANNING, MOVING}
-
-@onready var SFXClick = $Drone/Click
-@onready var SFXDamaged = $Drone/Damaged
-@onready var SFXDetach = $Drone/Detach
-@onready var SFXMove = $Drone/Move
-@onready var SFXShoot = $Drone/Shoot
 
 @export var region_bound_tl: Vector2i
 @export var region_bound_br: Vector2i
@@ -39,7 +34,9 @@ func _ready() -> void:
   state = State.PLANNING
   user_con.connect("command_ready", self._on_command_ready)
   comp_con.connect("command_ready", self._on_command_ready)
-  pool_command()
+  
+  await get_tree().root.ready
+  start_round()
 
 func _draw() -> void:
   var tl = Vector2(valid_bbox.position * grid_stride) - (Vector2.ONE * grid_stride * 0.5)
@@ -66,7 +63,8 @@ func register_drone(drone: Drone):
   drone.connect("drone_joint_clicked", self._on_drone_clicked)
   drones.append(drone)
 
-func pool_command():
+func start_round():
+  # Start pooling command
   var user_drones: Array[Drone] = []
   var comp_drones: Array[Drone] = []
 
@@ -81,6 +79,7 @@ func pool_command():
 
   user_con.prepare_controls(drones, user_drones)
   comp_con.prepare_controls(drones, comp_drones)
+  round_start.emit(drones)
   
 func sort_drones_mass_ascending(d1: Drone, d2: Drone):
   if d1.size < d2.size:
@@ -122,6 +121,9 @@ func resolve_commands():
 
       print(drone, clone)
 
+  # TODO: Check wincon
+
+
   print("Command resolved! Waiting for new ones..")
   resolve_finish.emit()
 
@@ -146,21 +148,21 @@ func move_within_bounds(drone: Drone, target: Vector2i):
     clamped_target.y += dbot
 
   print(target_pos_bbox, " ", dl, " ", dr, " ", dtop, " ", dbot)
-  SFXMove.play()
+  SFX.move.play()
 
   drone.move(clamped_target)
   pass
 
 func _on_drone_split(_drone: Drone, clone: Drone):
   register_drone(clone)
-  SFXDetach.play()
+  SFX.detach.play()
 
 func _on_drone_destroyed(drone: Drone):
   drones.erase(drone)
 
 func _on_drone_clicked(drone: Drone, node: Node2D):
   drone_clicked.emit(drone, node)
-  SFXClick.play()
+  SFX.click.play()
 
 func _on_command_ready(commands: Array[Command]):
   for command in commands:
@@ -171,4 +173,4 @@ func _on_resolve():
   state = State.MOVING
   await resolve_commands()
   state = State.PLANNING
-  pool_command()
+  start_round()

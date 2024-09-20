@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://67nvt00cll2i"]
+[gd_scene load_steps=11 format=3 uid="uid://67nvt00cll2i"]
 
 [ext_resource type="Script" path="res://Scripts/Managers/CampaignManager.gd" id="1_w42tk"]
 [ext_resource type="PackedScene" uid="uid://bb2p7j8muohnk" path="res://Game/Level1.tscn" id="2_1se7r"]
@@ -7,7 +7,9 @@
 [ext_resource type="Script" path="res://Scripts/Controller/ControllerAI.gd" id="3_u83lr"]
 [ext_resource type="Script" path="res://Scripts/UI/Highlighter.gd" id="4_bqxx2"]
 [ext_resource type="Script" path="res://Scripts/UI/GameUI.gd" id="5_lns60"]
-[ext_resource type="PackedScene" uid="uid://xvaecelgqh31" path="res://Game/UI/Highlighter.tscn" id="5_rinqf"]
+[ext_resource type="PackedScene" uid="uid://xvaecelgqh31" path="res://Game/UI/JointHighlighter.tscn" id="5_rinqf"]
+[ext_resource type="PackedScene" uid="uid://bxjg5g5co3ba8" path="res://Game/UI/MoveHighlighter.tscn" id="7_glgdp"]
+[ext_resource type="PackedScene" uid="uid://dy3wf8gi2ec7i" path="res://Prefabs/UI/TurnTrackerTile.tscn" id="10_obw77"]
 
 [node name="GameSession" type="Node2D"]
 script = ExtResource("1_w42tk")
@@ -26,8 +28,9 @@ script = ExtResource("2_mqu68")
 
 [node name="Highlighter" type="Node2D" parent="ControllerUI"]
 script = ExtResource("4_bqxx2")
-dots = ExtResource("5_rinqf")
-state = null
+joint_hl_cell = ExtResource("5_rinqf")
+move_hl_cell = ExtResource("7_glgdp")
+shoot_hl_cell = ExtResource("7_glgdp")
 
 [node name="ControllerAI" type="Node2D" parent="."]
 script = ExtResource("3_u83lr")
@@ -36,6 +39,7 @@ script = ExtResource("3_u83lr")
 script = ExtResource("5_lns60")
 controller = NodePath("../ControllerUI")
 highlighter = NodePath("../ControllerUI/Highlighter")
+tracker_tile = ExtResource("10_obw77")
 metadata/_edit_use_anchors_ = true
 
 [node name="UI" type="Control" parent="GameUI"]
@@ -70,46 +74,6 @@ text = "Submit"
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="GameUI/UI/Sidebar/TurnCycle"]
-layout_mode = 2
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_bottom = 2
-
-[node name="ColorRect" type="ColorRect" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-color = Color(0.0728426, 0.0728426, 0.0728426, 1)
-
-[node name="Label" type="Label" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer/ColorRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Very Cool Turn Tracker"
-autowrap_mode = 2
-
-[node name="MarginContainer2" type="MarginContainer" parent="GameUI/UI/Sidebar/TurnCycle"]
-layout_mode = 2
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_bottom = 2
-
-[node name="ColorRect" type="ColorRect" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer2"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-color = Color(0.0728426, 0.0728426, 0.0728426, 1)
-
-[node name="Label" type="Label" parent="GameUI/UI/Sidebar/TurnCycle/MarginContainer2/ColorRect"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Very Cool Turn Tracker"
-autowrap_mode = 2
-
 [node name="SelectorBox" type="VBoxContainer" parent="GameUI/UI"]
 layout_mode = 0
 offset_left = -64.0
@@ -130,6 +94,7 @@ text = "Shoot
 "
 
 [connection signal="drone_clicked" from="LevelManager" to="GameUI" method="_on_drone_click"]
+[connection signal="round_start" from="LevelManager" to="GameUI" method="_on_level_manager_round_start"]
 [connection signal="resolve" from="GameUI" to="LevelManager" method="_on_resolve"]
 [connection signal="button_up" from="GameUI/UI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
 [connection signal="pressed" from="GameUI/UI/SelectorBox/Move" to="GameUI" method="_on_move_click"]

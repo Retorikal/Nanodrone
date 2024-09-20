@@ -175,6 +175,7 @@ func split(joint: Joint) -> Drone:
         unexplored_ids.append(cell.grid_pos)
 
   # Create clone
+  var life_ratio = life / max_life
   var clone = Drone.new()
   clone.grid_stride = grid_stride
   clone.position = position
@@ -210,6 +211,11 @@ func split(joint: Joint) -> Drone:
   clone.grid_pos = start_pos + direction * clone_force
   drone_split.emit(self, clone)
   print("Splitting ", main_force, ":", clone_force, " ", explored_ids.size(), ":", size)
+
+  # Distribute life
+  clone.life = clone.max_life * life_ratio
+  life = max_life * life_ratio
+  print("Life split %f %f" % [clone.life, life])
 
   return clone
 

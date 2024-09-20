@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3 uid="uid://dy3wf8gi2ec7i"]
+
+[ext_resource type="Script" path="res://Scripts/UI/TurnTrackerTile.gd" id="1_06b53"]
+[ext_resource type="Texture2D" uid="uid://dpy03pymricwi" path="res://Assets/Blank.tres" id="2_3h1ac"]
+
+[node name="MarginContainer" type="MarginContainer"]
+offset_right = 164.0
+offset_bottom = 64.0
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_bottom = 2
+script = ExtResource("1_06b53")
+move_dist = null
+gun = 0.0
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0.17, 0.17, 0.17, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 2
+
+[node name="BoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/BoxContainer"]
+layout_mode = 2
+
+[node name="Command" type="Label" parent="MarginContainer/BoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Idle
+"
+
+[node name="Props" type="Label" parent="MarginContainer/BoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ">>3   //2"
+horizontal_alignment = 2
+
+[node name="HP" type="TextureProgressBar" parent="MarginContainer/BoxContainer"]
+texture_filter = 1
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 2.0
+value = 1.0
+nine_patch_stretch = true
+stretch_margin_left = 5
+stretch_margin_right = 5
+texture_progress = ExtResource("2_3h1ac")
+tint_progress = Color(0.0833333, 1, 0, 1)

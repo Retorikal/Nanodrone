@@ -7,10 +7,15 @@ enum State {DEFAULT, SELECTING, SELECTING_MOVE, SELECTING_SPLIT, WAITING}
 
 @export var controller: ControllerUI
 @export var state: State = State.DEFAULT
-@export var highlighter: Highlighter
+@export var highlighter: HighlighterManager
+@export var tracker_tile: PackedScene
 
 @onready var split_button: Button = $UI/SelectorBox/Split
 @onready var selector: Control = $UI/SelectorBox
+
+# These are initialized by _on_level_manager_round_start
+@onready var tracker_sidebar: Control = $UI/Sidebar/TurnCycle
+@onready var trackers: Dictionary = Dictionary()
 
 var selected_drone: Drone
 
@@ -18,21 +23,20 @@ var selected_drone: Drone
 func _ready() -> void:
   pass # Replace with function body.
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-  pass
-
-func _on_resolve_finish():
-  state = State.DEFAULT
-  pass
-
 func focus_selection(drone: Drone, component: Node2D):
   selected_drone = drone
   selector.position = get_viewport().get_mouse_position()
 
 func defocus_selection():
   selector.position = Vector2(-1000, 0)
+
+func register_command(command: Command):
+
+  var tracker: TurnTrackerTile = trackers[command.target_drone]
+  tracker.command_name = command.command_name()
+
+  controller.add_command(command)
+  pass
 
 func _on_drone_click(drone: Drone, component: Node2D):
   if not drone in controller.commandables:
@@ -50,7 +54,7 @@ func _on_drone_click(drone: Drone, component: Node2D):
       if not component is Joint or not drone == selected_drone:
         return
       
-      controller.add_command(SplitCommand.new(selected_drone, component))
+      register_command(SplitCommand.new(selected_drone, component))
       highlighter.highlight_joints_finalize(component)
       state = State.DEFAULT
 
@@ -72,12 +76,39 @@ func _on_move_click() -> void:
   defocus_selection()
   pass # Replace with function body.
 
+func _on_level_manager_round_start(sorted_drones: Array[Drone]) -> void:
+  # tracker_sidebar = $UI/Sidebar/TurnCycle
+  for drone in trackers.keys():
+    var tile = trackers[drone]
+    tracker_sidebar.remove_child(tile)
+    tile.queue_free()
+
+  trackers.clear()
+
+  for drone in sorted_drones:
+    print("Adding tile for %d" % drone.max_move_dist)
+    var tile: TurnTrackerTile = tracker_tile.instantiate()
+    trackers[drone] = tile
+    tile.health = drone.life
+    tile.max_health = drone.max_life
+    tile.move_dist = drone.max_move_dist
+    tile.gun = 0
+    tracker_sidebar.add_child(tile)
+    print("Added card..")
+    
+    if drone in controller.commandables:
+      tile.command_name = "Idle"
+
+    else:
+      tile.command_name = "?"
+
+    
 func _input(event):
   # Mouse in viewport coordinates.
   match state:
     State.SELECTING_MOVE:
       if event is InputEventMouseButton and event.is_pressed():
         var target = selected_drone.grid_pos + highlighter.dgrid
-        controller.add_command(MoveCommand.new(selected_drone, target))
+        register_command(MoveCommand.new(selected_drone, target))
         highlighter.highlight_drone_spectre_finalize()
         state = State.DEFAULT

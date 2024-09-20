@@ -1,0 +1,32 @@
+[gd_scene load_steps=8 format=3 uid="uid://jv13ougqsiok"]
+
+[ext_resource type="Script" path="res://Scripts/SFX.gd" id="1_b6tbu"]
+[ext_resource type="AudioStream" uid="uid://c32mflftaf66e" path="res://Assets/Audio/Click SFX.wav" id="1_klp73"]
+[ext_resource type="AudioStream" uid="uid://dblm81aksl28y" path="res://Assets/Audio/Damaged SFX.wav" id="2_ejw8c"]
+[ext_resource type="AudioStream" uid="uid://cmidhkjmdihx4" path="res://Assets/Audio/Detach.wav" id="3_g1wix"]
+[ext_resource type="AudioStream" uid="uid://bu578325lr55c" path="res://Assets/Audio/Movement.wav" id="4_vxivm"]
+[ext_resource type="AudioStream" uid="uid://d1oelx2u2lmjw" path="res://Assets/Audio/Shoot.wav" id="5_ggpxc"]
+[ext_resource type="AudioStream" uid="uid://cbgeqwrr8ccqu" path="res://Assets/Audio/Main Theme.mp3" id="6_wpqee"]
+
+[node name="SFX" type="Node"]
+script = ExtResource("1_b6tbu")
+
+[node name="Click" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("1_klp73")
+
+[node name="Damaged" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_ejw8c")
+
+[node name="Detach" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_g1wix")
+
+[node name="Move" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_vxivm")
+
+[node name="Shoot" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_ggpxc")
+
+[node name="Main BGM" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_wpqee")
+autoplay = true
+parameters/looping = false

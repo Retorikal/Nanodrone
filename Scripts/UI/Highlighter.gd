@@ -1,24 +1,23 @@
 extends Node2D
-class_name Highlighter
+class_name HighlighterManager
 
 enum State {IDLE, HIGHLIGHT_MOVE, HIGHLIGHT_JOINT}
 
-@export var dots: PackedScene
+@export var joint_hl_cell: PackedScene
+@export var move_hl_cell: PackedScene
+@export var shoot_hl_cell: PackedScene
 @export var state: State = State.IDLE
+@onready var hl_cell_pools = {
+  Highlighter.Type.MOVE: NodePool.new(move_hl_cell, 300),
+  Highlighter.Type.JOINT: NodePool.new(joint_hl_cell, 300),
+  Highlighter.Type.SHOOT: NodePool.new(joint_hl_cell, 0),
+}
 
-var hl_cells: Array[Node2D] = []
-var used_hl_cells: Array[Node2D] = []
-var hls: Array[Node2D]
+var hls: Dictionary
 var active_hl: Node2D
 var click_position: Vector2
 var selected_drone: Drone
 var dgrid: Vector2i
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-  for i in range(300):
-    hl_cells.append(dots.instantiate())
-  pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
@@ -33,32 +32,37 @@ func _process(_delta: float) -> void:
       active_hl.global_position = active_hl.global_position.lerp(snap_position, 0.5)
   pass
 
-func add_highlighter_cell(hl: Node2D):
-  var hl_cell = hl_cells.pop_back()
-  used_hl_cells.append(hl_cell)
+func add_highlighter_cell(hl: Highlighter):
+  var hl_cell = hl_cell_pools[hl.type].get_node()
   hl.add_child(hl_cell)
   return hl_cell
 
-func get_highlighter(drone: Drone):
-  var hl = Node2D.new()
-  add_child(hl)
+func get_highlighter(drone: Drone, type: Highlighter.Type):
+  var hl: Highlighter
+  if drone in hls:
+    hl = hls[drone]
+    clear_highlighter(hl)
+  else:
+    hl = Highlighter.new()
+    add_child(hl)
+
+  hl.type = type
   hl.global_position = drone.global_position
-  hls.append(hl)
+  hls[drone] = hl
   return hl
 
-func clear_highlighter(hl: Node2D):
+func clear_highlighter(hl: Highlighter):
   for cell in hl.get_children():
     hl.remove_child(cell)
-    hl_cells.append(cell)
+    hl_cell_pools[hl.type].return_node(cell)
 
 func highlight_joints(drone: Drone):
   state = State.HIGHLIGHT_JOINT
-  active_hl = get_highlighter(drone)
+  active_hl = get_highlighter(drone, Highlighter.Type.JOINT)
   active_hl.global_position = drone.global_position
   for joint_key in drone.joint_dict:
     var joint = drone.joint_dict[joint_key]
     var hl_cell = add_highlighter_cell(active_hl)
-    print("Moving to ", joint.global_position)
     hl_cell.global_position = joint.global_position
   pass
 
@@ -71,7 +75,7 @@ func highlight_joints_finalize(joint: Joint):
 
 func highlight_drone_spectre(drone: Drone):
   state = State.HIGHLIGHT_MOVE
-  active_hl = get_highlighter(drone)
+  active_hl = get_highlighter(drone, Highlighter.Type.MOVE)
   selected_drone = drone
   click_position = get_viewport().get_mouse_position()
   for cell_key in drone.cell_dict:
@@ -84,7 +88,8 @@ func highlight_drone_spectre_finalize():
   state = State.IDLE
 
 func wipe():
-  for hl in hls:
+  for key in hls:
+    var hl: Highlighter = hls[key]
     clear_highlighter(hl)
     hl.queue_free()
 

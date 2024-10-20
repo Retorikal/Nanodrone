@@ -91,7 +91,7 @@ func sort_drones_mass_ascending(d1: Drone, d2: Drone):
   return false
 
 func resolve_commands():
-  var resolvable_drones = drones.duplicate(false)
+  var resolvable_drones: Array[Drone] = drones.duplicate(false)
 
   print("Resolving ", pending_commands.size(), " commands")
 
@@ -119,7 +119,9 @@ func resolve_commands():
       if clone.is_moving:
         await clone.action_done
 
-      print(drone, clone)
+    if command is ShootCommand:
+      drone.shoot()
+      await drone.action_done
 
   # TODO: Check wincon
 

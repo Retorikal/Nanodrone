@@ -9,9 +9,9 @@ region_bound_tl = Vector2i(5, 1)
 region_bound_br = Vector2i(31, 17)
 
 [node name="Drone" parent="." instance=ExtResource("1_n34wm")]
-position = Vector2(324, 324)
-grid_pos = Vector2i(9, 9)
+position = Vector2(360, 324)
+grid_pos = Vector2i(10, 9)
 split_strength = 2
 move_speed = 30.0
-life = 40.0
+life = 52.0
 max_move_dist = 1

@@ -21,6 +21,7 @@ signal drone_destroyed(drone: Drone)
 @export var click_to_realign_cells: bool:
   set(value):
     register_cells()
+    solve_cell_connections()
 @export var size: int:
   get():
     return cell_dict.size()
@@ -33,6 +34,13 @@ signal drone_destroyed(drone: Drone)
 @export var max_move_dist: int:
   get():
     return round(move_speed / size)
+@export var gun_count: int:
+  get():
+    var gun_c = 0
+    for id in cell_dict:
+      if cell_dict[id] is CellGun:
+        gun_c += 1
+    return gun_c
 
 @onready var grid_stride: int = 36
 @onready var cell_dict: Dictionary = Dictionary()
@@ -47,7 +55,7 @@ var global_bbox: Rect2i:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
   register_cells()
-  register_size()
+  solve_cell_connections()
 
   if not Engine.is_editor_hint():
     register_joints()
@@ -98,8 +106,9 @@ func delete_joint(joint: Joint):
   joint_dict.erase(joint.delete())
   return joint
 
-func register_size():
+func register_cells():
   # TODO: Round everything first
+  cell_dict = Dictionary()
   var tl: Vector2i = Vector2i(100000, 100000)
   var br: Vector2i = Vector2i(-100000, -100000)
   for child in get_children():
@@ -113,10 +122,9 @@ func register_size():
       br = Vector2i(max(br.x, child.grid_pos.x), max(br.y, child.grid_pos.y))
   
   local_bbox = Rect2i(tl, br + Vector2i.ONE - tl)
+  print_debug("Drone cells registered! Bbox:", global_bbox)
 
-func register_cells():
-  cell_dict = Dictionary()
-
+func solve_cell_connections():
   for id in cell_dict:
     var cell: Cell = cell_dict[id]
     if cell.connected_W:
@@ -140,8 +148,6 @@ func register_cells():
       else:
         cell.connected_D = false
     pass
-
-  print_debug("Drone cells registered", global_bbox)
 
 func damage(damage: float):
   life -= damage
@@ -191,7 +197,7 @@ func split(joint: Joint) -> Drone:
     remove_child(cell)
     clone.add_child(cell)
   get_parent().add_child(clone)
-  register_size()
+  register_cells()
 
   for joint_id in joint_dict.keys():
     var checked_joint: Joint = joint_dict[joint_id]
@@ -219,6 +225,27 @@ func split(joint: Joint) -> Drone:
 
   return clone
 
+func shoot():
+  var original_position = global_position
+  var recoil_position = global_position + Vector2.LEFT * grid_stride * 0.5
+  create_tween().tween_property(self, "global_position", recoil_position, 0).set_delay(0.5)
+  create_tween().tween_property(self, "global_position", original_position, 0.5).set_delay(0.55)
+
+  var cell_guns: Array[CellGun]
+  var _finish_shooting = func(_cg: CellGun):
+    for cell_gun in cell_guns:
+      if cell_gun.is_shooting:
+        return
+    
+    action_done.emit(self)
+
+  for id in cell_dict:
+    var cell = cell_dict[id]
+    if cell is CellGun:
+      cell_guns.append(cell)
+      cell.shoot_finish.connect(_finish_shooting)
+      cell.shoot()
+
 func _body_clicked(body_part: Area2D):
   if body_part is Cell:
     drone_body_clicked.emit(self, body_part)
@@ -228,7 +255,6 @@ func _body_clicked(body_part: Area2D):
     return
 
   print_debug("Unrecognized clicker")
-
 
 func _on_request_connect(cell: Cell, connect_cell: C.Dir, value: bool):
   pass

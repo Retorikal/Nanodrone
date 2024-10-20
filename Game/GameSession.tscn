@@ -35,10 +35,10 @@ shoot_hl_cell = ExtResource("7_glgdp")
 [node name="ControllerAI" type="Node2D" parent="."]
 script = ExtResource("3_u83lr")
 
-[node name="GameUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("controller", "highlighter")]
+[node name="GameUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("controller", "highlights_man")]
 script = ExtResource("5_lns60")
 controller = NodePath("../ControllerUI")
-highlighter = NodePath("../ControllerUI/Highlighter")
+highlights_man = NodePath("../ControllerUI/Highlighter")
 tracker_tile = ExtResource("10_obw77")
 metadata/_edit_use_anchors_ = true
 
@@ -99,3 +99,4 @@ text = "Shoot
 [connection signal="button_up" from="GameUI/UI/Sidebar/Submit" to="GameUI" method="_on_resolve_click"]
 [connection signal="pressed" from="GameUI/UI/SelectorBox/Move" to="GameUI" method="_on_move_click"]
 [connection signal="pressed" from="GameUI/UI/SelectorBox/Split" to="GameUI" method="_on_split_click"]
+[connection signal="pressed" from="GameUI/UI/SelectorBox/Shoot" to="GameUI" method="_on_shoot_click"]

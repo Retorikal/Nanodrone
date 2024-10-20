@@ -7,7 +7,7 @@ enum State {DEFAULT, SELECTING, SELECTING_MOVE, SELECTING_SPLIT, WAITING}
 
 @export var controller: ControllerUI
 @export var state: State = State.DEFAULT
-@export var highlighter: HighlighterManager
+@export var highlights_man: HighlighterManager
 @export var tracker_tile: PackedScene
 
 @onready var split_button: Button = $UI/SelectorBox/Split
@@ -26,6 +26,8 @@ func _ready() -> void:
 func focus_selection(drone: Drone, component: Node2D):
   selected_drone = drone
   selector.position = get_viewport().get_mouse_position()
+  var selected_tile: TurnTrackerTile = trackers[selected_drone]
+  selected_tile.highlight(true)
 
 func defocus_selection():
   selector.position = Vector2(-1000, 0)
@@ -37,6 +39,12 @@ func register_command(command: Command):
 
   controller.add_command(command)
   pass
+
+func reset_current_selection():
+  state = State.DEFAULT
+  defocus_selection()
+  var selected_tile: TurnTrackerTile = trackers[selected_drone]
+  selected_tile.highlight(false)
 
 func _on_drone_click(drone: Drone, component: Node2D):
   if not drone in controller.commandables:
@@ -55,26 +63,31 @@ func _on_drone_click(drone: Drone, component: Node2D):
         return
       
       register_command(SplitCommand.new(selected_drone, component))
-      highlighter.highlight_joints_finalize(component)
-      state = State.DEFAULT
+      highlights_man.highlight_joints_finalize(component)
+      reset_current_selection()
 
 func _on_resolve_click():
-  state = State.DEFAULT
-  highlighter.wipe()
+  reset_current_selection()
+  highlights_man.wipe()
   controller.submit_command()
   resolve.emit()
   pass
 
 func _on_split_click():
   state = State.SELECTING_SPLIT
-  highlighter.highlight_joints(selected_drone)
+  highlights_man.highlight_joints(selected_drone)
   defocus_selection()
 
 func _on_move_click() -> void:
   state = State.SELECTING_MOVE
-  highlighter.highlight_drone_spectre(selected_drone)
+  highlights_man.highlight_drone_spectre(selected_drone)
   defocus_selection()
   pass # Replace with function body.
+
+func _on_shoot_click() -> void:
+  register_command(ShootCommand.new(selected_drone))
+  highlights_man.highlight_drone_spectre_finalize()
+  reset_current_selection()
 
 func _on_level_manager_round_start(sorted_drones: Array[Drone]) -> void:
   # tracker_sidebar = $UI/Sidebar/TurnCycle
@@ -92,7 +105,7 @@ func _on_level_manager_round_start(sorted_drones: Array[Drone]) -> void:
     tile.health = drone.life
     tile.max_health = drone.max_life
     tile.move_dist = drone.max_move_dist
-    tile.gun = 0
+    tile.gun = drone.gun_count
     tracker_sidebar.add_child(tile)
     print("Added card..")
     
@@ -108,7 +121,7 @@ func _input(event):
   match state:
     State.SELECTING_MOVE:
       if event is InputEventMouseButton and event.is_pressed():
-        var target = selected_drone.grid_pos + highlighter.dgrid
+        var target = selected_drone.grid_pos + highlights_man.dgrid
         register_command(MoveCommand.new(selected_drone, target))
-        highlighter.highlight_drone_spectre_finalize()
-        state = State.DEFAULT
+        highlights_man.highlight_drone_spectre_finalize()
+        reset_current_selection()
